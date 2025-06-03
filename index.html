@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-firestore-compat.min.js"></script>
-   <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Login Screen -->
@@ -21,22 +21,6 @@
                 <input type="password" id="loginPassword" class="form-control" placeholder="Password">
             </div>
             <button onclick="login()" class="btn" style="width: 100%; margin-bottom: 15px;">Log ind</button>
-           
-            
-            <div id="signupForm" class="hidden" style="margin-top: 30px;">
-                <h3 style="margin-bottom: 20px;">Opret ny konto</h3>
-                <div class="form-group">
-                    <input type="text" id="signupName" class="form-control" placeholder="Dit navn">
-                </div>
-                <div class="form-group">
-                    <input type="email" id="signupEmail" class="form-control" placeholder="Email">
-                </div>
-                <div class="form-group">
-                    <input type="password" id="signupPassword" class="form-control" placeholder="Password">
-                </div>
-                <button onclick="signup()" class="btn btn-success" style="width: 100%; margin-bottom: 10px;">Opret konto</button>
-                <button onclick="hideSignup()" class="btn btn-secondary" style="width: 100%;">Tilbage</button>
-            </div>
         </div>
     </div>
 
@@ -78,7 +62,7 @@
                     <button onclick="showAddModal()" class="btn">+ Tilføj virksomhed</button>
                 </div>
 
-                <!-- Search and Filter -->
+                 <!-- Search and Filter -->
                 <div class="search-filter">
                     <input type="text" id="searchInput" class="form-control" placeholder="Søg virksomheder..." onkeyup="filterCompanies()">
                     <select id="statusFilter" class="form-control" onchange="filterCompanies()">
@@ -89,6 +73,12 @@
                         <option value="interested">Interesseret</option>
                         <option value="closed">Lukket</option>
                     </select>
+                    <select id="emailConsentFilter" class="form-control" onchange="filterCompanies()">
+                        <option value="">Alle email tilladelser</option>
+                        <option value="yes">Vil modtage emails</option>
+                        <option value="no">Vil ikke modtage emails</option>
+                        <option value="unknown">Ukendt</option>
+                    </select>
                 </div>
 
                 <!-- Companies Table -->
@@ -96,10 +86,12 @@
                     <thead>
                         <tr>
                             <th>Virksomhed</th>
+                            <th>CVR</th>
                             <th>Kontaktperson</th>
                             <th>Email</th>
                             <th>Telefon</th>
                             <th>Status</th>
+                            <th>Email tilladelse</th>
                             <th>Sidst opdateret</th>
                             <th>Handlinger</th>
                         </tr>
@@ -122,6 +114,10 @@
                 <div class="form-group">
                     <label>Virksomhedsnavn *</label>
                     <input type="text" id="companyName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>CVR-nummer</label>
+                    <input type="text" id="cvrNumber" class="form-control" pattern="[0-9]{8}" placeholder="12345678" title="CVR skal være 8 cifre">
                 </div>
                 <div class="form-group">
                     <label>Kontaktperson</label>
@@ -151,6 +147,14 @@
                         <option value="replied">Svar modtaget</option>
                         <option value="interested">Interesseret</option>
                         <option value="closed">Lukket</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Vil modtage fremtidige emails?</label>
+                    <select id="emailConsent" class="form-control">
+                        <option value="unknown">Ukendt</option>
+                        <option value="yes">Ja - Vil gerne modtage emails</option>
+                        <option value="no">Nej - Vil ikke modtage emails</option>
                     </select>
                 </div>
                 <div class="form-group">
