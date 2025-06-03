@@ -150,12 +150,14 @@ function showEditModal(companyId) {
     document.getElementById('modalTitle').textContent = 'Rediger virksomhed';
     
     document.getElementById('companyName').value = company.name || '';
+    document.getElementById('cvrNumber').value = company.cvrNumber || '';
     document.getElementById('contactPerson').value = company.contactPerson || '';
     document.getElementById('contactEmail').value = company.email || '';
     document.getElementById('contactPhone').value = company.phone || '';
     document.getElementById('website').value = company.website || '';
     document.getElementById('industry').value = company.industry || '';
     document.getElementById('status').value = company.status || 'not-contacted';
+    document.getElementById('emailConsent').value = company.emailConsent || 'unknown';
     document.getElementById('notes').value = company.notes || '';
     
     document.getElementById('companyModal').style.display = 'block';
@@ -191,12 +193,14 @@ document.getElementById('companyForm').addEventListener('submit', function(e) {
     
     const companyData = {
         name: document.getElementById('companyName').value,
+        cvrNumber: document.getElementById('cvrNumber').value,
         contactPerson: document.getElementById('contactPerson').value,
         email: document.getElementById('contactEmail').value,
         phone: document.getElementById('contactPhone').value,
         website: document.getElementById('website').value,
         industry: document.getElementById('industry').value,
         status: document.getElementById('status').value,
+        emailConsent: document.getElementById('emailConsent').value,
         notes: document.getElementById('notes').value,
         updatedAt: new Date(),
         updatedBy: currentUser ? currentUser.email : 'demo@example.com'
@@ -270,12 +274,14 @@ function loadDemoData() {
         {
             id: 'demo-1',
             name: 'Acme Corp',
+            cvrNumber: '12345678',
             contactPerson: 'John Doe',
             email: 'john@acme.com',
             phone: '+45 12 34 56 78',
             website: 'https://acme.com',
             industry: 'Technology',
             status: 'contacted',
+            emailConsent: 'yes',
             notes: 'Sendt første email d. 1/6',
             updatedAt: new Date('2024-06-01'),
             updatedBy: 'demo@example.com'
@@ -283,12 +289,14 @@ function loadDemoData() {
         {
             id: 'demo-2',
             name: 'TechStart ApS',
+            cvrNumber: '87654321',
             contactPerson: 'Jane Smith',
             email: 'jane@techstart.dk',
             phone: '+45 87 65 43 21',
             website: 'https://techstart.dk',
             industry: 'Software',
             status: 'replied',
+            emailConsent: 'yes',
             notes: 'Positiv respons, book møde',
             updatedAt: new Date('2024-06-02'),
             updatedBy: 'demo@example.com'
@@ -296,11 +304,13 @@ function loadDemoData() {
         {
             id: 'demo-3',
             name: 'Design Studio',
+            cvrNumber: '11223344',
             contactPerson: 'Lars Hansen',
             email: 'lars@designstudio.dk',
             phone: '+45 11 22 33 44',
             industry: 'Design',
             status: 'not-contacted',
+            emailConsent: 'unknown',
             notes: '',
             updatedAt: new Date('2024-06-02'),
             updatedBy: 'demo@example.com'
@@ -319,10 +329,12 @@ function renderCompanies() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td><strong>${company.name}</strong></td>
+            <td>${company.cvrNumber || '-'}</td>
             <td>${company.contactPerson || '-'}</td>
             <td><a href="mailto:${company.email}">${company.email}</a></td>
             <td>${company.phone || '-'}</td>
             <td><span class="status-badge status-${company.status}">${getStatusText(company.status)}</span></td>
+            <td><span class="email-consent-badge consent-${company.emailConsent || 'unknown'}">${getEmailConsentText(company.emailConsent)}</span></td>
             <td>${formatDate(company.updatedAt)}</td>
             <td>
                 <button onclick="showEditModal('${company.id}')" class="btn btn-small" style="margin-right: 5px;">Rediger</button>
@@ -337,16 +349,19 @@ function renderCompanies() {
 function filterCompanies() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const statusFilter = document.getElementById('statusFilter').value;
+    const emailConsentFilter = document.getElementById('emailConsentFilter').value;
     
     const filteredCompanies = companies.filter(company => {
         const matchesSearch = !searchTerm || 
             company.name.toLowerCase().includes(searchTerm) ||
             (company.contactPerson && company.contactPerson.toLowerCase().includes(searchTerm)) ||
-            company.email.toLowerCase().includes(searchTerm);
+            company.email.toLowerCase().includes(searchTerm) ||
+            (company.cvrNumber && company.cvrNumber.includes(searchTerm));
         
         const matchesStatus = !statusFilter || company.status === statusFilter;
+        const matchesEmailConsent = !emailConsentFilter || (company.emailConsent || 'unknown') === emailConsentFilter;
         
-        return matchesSearch && matchesStatus;
+        return matchesSearch && matchesStatus && matchesEmailConsent;
     });
 
     const tbody = document.getElementById('companiesTableBody');
@@ -356,10 +371,12 @@ function filterCompanies() {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td><strong>${company.name}</strong></td>
+            <td>${company.cvrNumber || '-'}</td>
             <td>${company.contactPerson || '-'}</td>
             <td><a href="mailto:${company.email}">${company.email}</a></td>
             <td>${company.phone || '-'}</td>
             <td><span class="status-badge status-${company.status}">${getStatusText(company.status)}</span></td>
+            <td><span class="email-consent-badge consent-${company.emailConsent || 'unknown'}">${getEmailConsentText(company.emailConsent)}</span></td>
             <td>${formatDate(company.updatedAt)}</td>
             <td>
                 <button onclick="showEditModal('${company.id}')" class="btn btn-small" style="margin-right: 5px;">Rediger</button>
@@ -393,6 +410,15 @@ function getStatusText(status) {
         'closed': 'Lukket'
     };
     return statusMap[status] || status;
+}
+
+function getEmailConsentText(consent) {
+    const consentMap = {
+        'yes': 'Ja',
+        'no': 'Nej',
+        'unknown': 'Ukendt'
+    };
+    return consentMap[consent] || 'Ukendt';
 }
 
 function formatDate(date) {
@@ -475,13 +501,15 @@ document.getElementById('notes').addEventListener('input', function() {
 // Export functionality (demo)
 function exportData() {
     const csvContent = "data:text/csv;charset=utf-8," 
-        + "Virksomhed,Kontaktperson,Email,Telefon,Status,Branche,Noter\n"
+        + "Virksomhed,CVR,Kontaktperson,Email,Telefon,Status,Email Tilladelse,Branche,Noter\n"
         + companies.map(c => [
             c.name,
+            c.cvrNumber || '',
             c.contactPerson || '',
             c.email,
             c.phone || '',
             getStatusText(c.status),
+            getEmailConsentText(c.emailConsent),
             c.industry || '',
             (c.notes || '').replace(/\n/g, ' ')
         ].map(field => `"${field}"`).join(',')).join('\n');
